@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PM Internship Recommendation Engine</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #F5F5F5;
+            min-height: 100vh;
+        }
+        
+        .sticky-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            padding: 12px 0;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .sticky-nav.visible {
+            transform: translateY(0);
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav-logo {
+            font-weight: 700;
+            color: #1A73E8;
+            font-size: 1.1rem;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            list-style: none;
+        }
+        
+        .nav-link {
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            background: #e3f2fd;
+            color: #1A73E8;
+        }
+        
+        .gov-header {
+            background: linear-gradient(90deg, #ff6b35 0%, #f7931e 25%, #ffffff 50%, #00d4aa 75%, #4ecdc4 100%);
+            padding: 16px 0;
+            border-bottom: 4px solid #2c3e50;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .gov-header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+        
+        .gov-logo-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .india-flag {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 2px solid #333;
+            position: relative;
+        }
+        
+        .flag-saffron {
+            height: 33.33%;
+            background: #FF9933;
+        }
+        
+        .flag-white {
+            height: 33.33%;
+            background: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .flag-green {
+            height: 33.33%;
+            background: #138808;
+        }
+        
+        .ashoka-chakra-small {
+            width: 12px;
+            height: 12px;
+            border: 1px solid #000080;
+            border-radius: 50%;
+            position: relative;
+        }
+        
+        .ashoka-chakra-small::before {
+            content: '☸';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 8px;
+            color: #000080;
+        }
+        
+        .gov-title {
+            color: #000080;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        
+        .ministry-name {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 2px;
+        }
+        
+        .pm-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 2px solid #000080;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .pm-photo-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid #ff9933;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f0f0f0;
+        }
+        
+        .pm-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .pm-fallback {
+            width: 100%;
+            height: 100%;
+            background: #000080;
+            color: white;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .pm-info {
+            text-align: left;
+        }
+        
+        .pm-name {
+            font-weight: 700;
+            color: #000080;
+            font-size: 1rem;
+            margin-bottom: 2px;
+        }
+        
+        .pm-title {
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+        
+        .banner {
+            background: linear-gradient(135deg, #4A5568 0%, #2D3748 100%);
+            color: white;
+            padding: 40px 24px;
+            margin-bottom: 32px;
+            box-shadow: 0 8px 32px rgba(74, 85, 104, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 160px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="80" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="60" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="70" cy="30" r="1.5" fill="rgba(255,255,255,0.1)"/></svg>');
+            animation: float 20s ease-in-out infinite;
+        }
+        
+        .banner-content {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .logo-placeholder {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .main-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            text-align: center;
+        }
+        
+        .info-section {
+            background: #FFFFFF;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 32px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(26, 115, 232, 0.1);
+        }
+        
+        .info-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 32px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .info-content {
+            color: #555;
+            line-height: 1.8;
+            font-size: 1rem;
+        }
+        
+        .info-content h3 {
+            color: #1A73E8;
+            font-weight: 600;
+            margin: 24px 0 12px 0;
+        }
+        
+        .info-content ul {
+            margin: 16px 0;
+            padding-left: 24px;
+        }
+        
+        .info-content li {
+            margin-bottom: 8px;
+        }
+        
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin: 24px 0;
+        }
+        
+        .benefit-card {
+            background: #f8f9ff;
+            padding: 24px;
+            border-radius: 12px;
+            border-left: 4px solid #1A73E8;
+        }
+        
+        .benefit-amount {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1A73E8;
+            margin-bottom: 8px;
+        }
+        
+        .benefit-description {
+            color: #666;
+            font-size: 0.95rem;
+        }
+        
+        .faq-item {
+            border-bottom: 1px solid #eee;
+            margin-bottom: 16px;
+        }
+        
+        .faq-question {
+            padding: 16px 0;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .faq-question:hover {
+            color: #1A73E8;
+        }
+        
+        .faq-icon {
+            transition: transform 0.3s ease;
+        }
+        
+        .faq-icon.rotated {
+            transform: rotate(180deg);
+        }
+        
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .faq-answer.open {
+            max-height: 200px;
+            padding-bottom: 16px;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin: 24px 0;
+        }
+        
+        .dashboard-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #1A73E8;
+        }
+        
+        .dashboard-card h4 {
+            color: #333;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-completed {
+            background: #cce5ff;
+            color: #004085;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #eee;
+            border-radius: 4px;
+            margin: 12px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #1A73E8;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .form-section {
+            background: #FFFFFF;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 32px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(26, 115, 232, 0.1);
+        }
+        
+        .form-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 32px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .input-label {
+            font-weight: 500;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .input-field {
+            padding: 12px 16px;
+            border: 2px solid #e3f2fd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: #1A73E8;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(26, 115, 232, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .select-field {
+            padding: 14px 18px;
+            border: 2px solid #e8f0fe;
+            border-radius: 12px;
+            font-size: 1rem;
+            background: #FFFFFF;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .select-field:focus {
+            outline: none;
+            border-color: #1A73E8;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(26, 115, 232, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .skills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .skill-chip {
+            background: #e8f0fe;
+            color: #1A73E8;
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .skill-chip:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(26, 115, 232, 0.2);
+        }
+        
+        .skill-chip.selected {
+            background: #1A73E8;
+            color: white;
+            border-color: #FFC107;
+            box-shadow: 0 4px 15px rgba(26, 115, 232, 0.3);
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, #1A73E8 0%, #1557B0 100%);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 40px auto 0;
+            box-shadow: 0 8px 25px rgba(26, 115, 232, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .submit-btn:hover::before {
+            left: 100%;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(26, 115, 232, 0.5);
+        }
+        
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .recommendations-section {
+            margin-top: 32px;
+        }
+        
+        .recommendations-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #1A1A1A;
+            margin-bottom: 24px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        
+        .recommendations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .recommendation-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(0, 8, 128, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .recommendation-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .card-sector {
+            background: #e3f2fd;
+            color: #000080;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .card-location {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+        
+        .card-description {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .apply-btn {
+            background: linear-gradient(135deg, #138808 0%, #0f6b06 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .apply-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(19, 136, 8, 0.3);
+        }
+        
+        .load-more-btn {
+            background: linear-gradient(135deg, #4A5568 0%, #2D3748 100%);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0 auto;
+        }
+        
+        .load-more-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(74, 85, 104, 0.3);
+        }
+        
+        .scroll-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #1A73E8 0%, #1557B0 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(26, 115, 232, 0.4);
+            transition: all 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+            z-index: 1000;
+        }
+        
+        .scroll-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .scroll-to-top:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(26, 115, 232, 0.5);
+        }
+        
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: #000080;
+        }
+        
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #e3f2fd;
+            border-top: 3px solid #000080;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 12px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-10px) rotate(1deg); }
+            66% { transform: translateY(5px) rotate(-1deg); }
+        }
+        
+        .material-icons {
+            font-size: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-title {
+                font-size: 2rem;
+            }
+            
+            .form-section {
+                padding: 24px 20px;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .banner-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .recommendations-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .gov-header-content {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+            
+            .pm-section {
+                order: -1;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .benefits-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const PMInternshipApp = () => {
+            const [formData, setFormData] = useState({
+                education: '',
+                skills: [],
+                sector: '',
+                location: ''
+            });
+            const [recommendations, setRecommendations] = useState([]);
+            const [loading, setLoading] = useState(false);
+            const [showRecommendations, setShowRecommendations] = useState(false);
+            const [showScrollTop, setShowScrollTop] = useState(false);
+            const [showStickyNav, setShowStickyNav] = useState(false);
+            const [openFAQ, setOpenFAQ] = useState(null);
+            const [displayedRecommendations, setDisplayedRecommendations] = useState(3);
+
+            const skillOptions = [
+                'Programming', 'Data Analysis', 'Digital Marketing', 'Content Writing',
+                'Graphic Design', 'Project Management', 'Communication', 'Research',
+                'Finance', 'Sales', 'Customer Service', 'Social Media'
+            ];
+
+            const sectorOptions = [
+                'Technology', 'Healthcare', 'Finance', 'Education', 'Government',
+                'Non-Profit', 'Manufacturing', 'Retail', 'Media', 'Consulting'
+            ];
+
+            const locationOptions = [
+                'Delhi', 'Mumbai', 'Bangalore', 'Chennai', 'Kolkata', 'Hyderabad',
+                'Pune', 'Ahmedabad', 'Jaipur', 'Remote'
+            ];
+
+            const allRecommendations = [
+                {
+                    id: 1,
+                    title: 'Software Development Intern',
+                    sector: 'Technology',
+                    location: 'Bangalore',
+                    description: 'Work on cutting-edge web applications using modern frameworks. Gain hands-on experience in full-stack development under PM Internship Scheme.'
+                },
+                {
+                    id: 2,
+                    title: 'Digital Marketing Intern',
+                    sector: 'Marketing',
+                    location: 'Mumbai',
+                    description: 'Create engaging social media campaigns and analyze digital marketing metrics for government initiatives and public awareness programs.'
+                },
+                {
+                    id: 3,
+                    title: 'Data Analyst Intern',
+                    sector: 'Government',
+                    location: 'Delhi',
+                    description: 'Analyze public policy data and create insights to improve citizen services and government efficiency under Digital India initiative.'
+                },
+                {
+                    id: 4,
+                    title: 'Content Writer Intern',
+                    sector: 'Media',
+                    location: 'Remote',
+                    description: 'Create compelling content for government websites and public awareness campaigns across multiple platforms and regional languages.'
+                },
+                {
+                    id: 5,
+                    title: 'Healthcare Research Intern',
+                    sector: 'Healthcare',
+                    location: 'Chennai',
+                    description: 'Support research initiatives in public health and contribute to policy recommendations for healthcare improvement under Ayushman Bharat.'
+                },
+                {
+                    id: 6,
+                    title: 'Financial Analyst Intern',
+                    sector: 'Finance',
+                    location: 'Mumbai',
+                    description: 'Assist in financial planning and analysis for government schemes and public sector enterprises. Learn about budget allocation and fiscal policy.'
+                },
+                {
+                    id: 7,
+                    title: 'Education Program Coordinator',
+                    sector: 'Education',
+                    location: 'Delhi',
+                    description: 'Support implementation of educational initiatives and skill development programs. Work with schools and training centers across India.'
+                },
+                {
+                    id: 8,
+                    title: 'UI/UX Design Intern',
+                    sector: 'Technology',
+                    location: 'Pune',
+                    description: 'Design user-friendly interfaces for government digital services and mobile applications. Improve citizen experience with technology.'
+                }
+            ];
+
+            useEffect(() => {
+                const handleScroll = () => {
+                    const scrollTop = window.pageYOffset;
+                    setShowScrollTop(scrollTop > 300);
+                    setShowStickyNav(scrollTop > 200);
+                };
+
+                window.addEventListener('scroll', handleScroll);
+                return () => window.removeEventListener('scroll', handleScroll);
+            }, []);
+
+            const scrollToTop = () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
+            const scrollToSection = (sectionId) => {
+                const element = document.getElementById(sectionId);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                }
+            };
+
+            const handleInputChange = (field, value) => {
+                setFormData(prev => ({
+                    ...prev,
+                    [field]: value
+                }));
+            };
+
+            const toggleSkill = (skill) => {
+                setFormData(prev => ({
+                    ...prev,
+                    skills: prev.skills.includes(skill)
+                        ? prev.skills.filter(s => s !== skill)
+                        : [...prev.skills, skill]
+                }));
+            };
+
+            const toggleFAQ = (index) => {
+                setOpenFAQ(openFAQ === index ? null : index);
+            };
+
+            const loadMoreRecommendations = () => {
+                setDisplayedRecommendations(prev => Math.min(prev + 3, allRecommendations.length));
+            };
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                setLoading(true);
+                setShowRecommendations(false);
+
+                // Simulate API call delay
+                setTimeout(() => {
+                    setRecommendations(allRecommendations);
+                    setDisplayedRecommendations(3);
+                    setLoading(false);
+                    setShowRecommendations(true);
+                    
+                    // Scroll to recommendations
+                    setTimeout(() => {
+                        const element = document.querySelector('.recommendations-section');
+                        if (element) {
+                            element.scrollIntoView({ behavior: 'smooth' });
+                        }
+                    }, 100);
+                }, 2000);
+            };
+
+            const handleApply = (internshipId) => {
+                alert(`Application submitted for internship ID: ${internshipId}. You will be redirected to the official PM Internship portal for further processing.`);
+            };
+
+            return (
+                <div>
+                    {/* Sticky Navigation */}
+                    <nav className={`sticky-nav ${showStickyNav ? 'visible' : ''}`}>
+                        <div className="nav-container">
+                            <div className="nav-logo">PM Internship Portal</div>
+                            <ul className="nav-links">
+                                <li><a href="#about" className="nav-link" onClick={(e) => { e.preventDefault(); scrollToSection('about'); }}>About</a></li>
+                                <li><a href="#eligibility" className="nav-link" onClick={(e) => { e.preventDefault(); scrollToSection('eligibility'); }}>Eligibility</a></li>
+                                <li><a href="#benefits" className="nav-link" onClick={(e) => { e.preventDefault(); scrollToSection('benefits'); }}>Benefits</a></li>
+                                <li><a href="#apply" className="nav-link" onClick={(e) => { e.preventDefault(); scrollToSection('apply'); }}>Apply</a></li>
+                                <li><a href="#dashboard" className="nav-link" onClick={(e) => { e.preventDefault(); scrollToSection('dashboard'); }}>Dashboard</a></li>
+                                <li><a href="#faq" className="nav-link" onClick={(e) => { e.preventDefault(); scrollToSection('faq'); }}>FAQ</a></li>
+                            </ul>
+                        </div>
+                    </nav>
+
+                    {/* Government Header */}
+                    <div className="gov-header">
+                        <div className="gov-header-content">
+                            <div className="gov-logo-section">
+                                <div className="india-flag">
+                                    <div className="flag-saffron"></div>
+                                    <div className="flag-white">
+                                        <div className="ashoka-chakra-small"></div>
+                                    </div>
+                                    <div className="flag-green"></div>
+                                </div>
+                                <div>
+                                    <div className="gov-title">Government of India</div>
+                                    <div className="ministry-name">Ministry of Skill Development & Entrepreneurship</div>
+                                </div>
+                            </div>
+                            <div className="pm-section">
+                                <div className="pm-photo-circle">
+                                    <img 
+                                        src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Narendra_Modi_official_portrait.jpg/220px-Narendra_Modi_official_portrait.jpg" 
+                                        alt="Prime Minister Narendra Modi" 
+                                        className="pm-photo"
+                                        onError={(e) => {
+                                            e.target.style.display = 'none';
+                                            e.target.nextSibling.style.display = 'flex';
+                                        }}
+                                    />
+                                    <div className="pm-fallback">
+                                        PM
+                                    </div>
+                                </div>
+                                <div className="pm-info">
+                                    <div className="pm-name">Narendra Modi</div>
+                                    <div className="pm-title">Prime Minister of India</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Banner Section */}
+                    <div className="banner">
+                        <div className="container">
+                            <div className="banner-content">
+                                <div className="logo-placeholder">
+                                    <span className="material-icons" style={{fontSize: '40px', color: 'white'}}>
+                                        account_balance
+                                    </span>
+                                </div>
+                                <div>
+                                    <h1 className="main-title">PM Internship Recommendation Engine</h1>
+                                    <p className="subtitle">Empowering Youth Through Skill Development & Employment</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="container">
+                        {/* About Section */}
+                        <div id="about" className="info-section">
+                            <h2 className="info-title">
+                                <span className="material-icons">info</span>
+                                About the PM Internship Scheme
+                            </h2>
+                            <div className="info-content">
+                                <p>The Prime Minister's Internship Scheme is a flagship initiative designed to bridge the gap between academic learning and industry requirements. This comprehensive program provides young Indians aged 21-24 with valuable work experience in top companies across various sectors.</p>
+                                
+                                <h3>Program Objectives</h3>
+                                <ul>
+                                    <li>Provide practical work experience to fresh graduates and job seekers</li>
+                                    <li>Enhance employability through skill development and industry exposure</li>
+                                    <li>Create a pipeline of skilled workforce for India's growing economy</li>
+                                    <li>Foster innovation and entrepreneurship among youth</li>
+                                </ul>
+                                
+                                <h3>Program Duration</h3>
+                                <p>The internship program runs for 12 months, providing comprehensive exposure to various aspects of the chosen field. Interns work full-time (40 hours per week) and receive mentorship from industry experts.</p>
+                            </div>
+                        </div>
+
+                        {/* Eligibility Section */}
+                        <div id="eligibility" className="info-section">
+                            <h2 className="info-title">
+                                <span className="material-icons">checklist</span>
+                                Detailed Eligibility Criteria
+                            </h2>
+                            <div className="info-content">
+                                <h3>Age Requirements</h3>
+                                <ul>
+                                    <li>Minimum age: 21 years (completed)</li>
+                                    <li>Maximum age: 24 years (as on application date)</li>
+                                    <li>Age relaxation of 5 years for SC/ST candidates</li>
+                                    <li>Age relaxation of 3 years for OBC candidates</li>
+                                </ul>
+                                
+                                <h3>Educational Qualifications</h3>
+                                <ul>
+                                    <li>Minimum: Higher Secondary (12th grade) from recognized board</li>
+                                    <li>Preferred: Graduate degree in any discipline</li>
+                                    <li>Technical certifications and diplomas are valued</li>
+                                    <li>No specific percentage requirement, but merit-based selection</li>
+                                </ul>
+                                
+                                <h3>Employment Status</h3>
+                                <ul>
+                                    <li>Currently unemployed or seeking better opportunities</li>
+                                    <li>Not enrolled in full-time education programs</li>
+                                    <li>Available for 12-month commitment</li>
+                                    <li>Willing to relocate if required</li>
+                                </ul>
+                                
+                                <h3>Citizenship & Documentation</h3>
+                                <ul>
+                                    <li>Indian citizen with valid Aadhaar card</li>
+                                    <li>Valid bank account for stipend disbursement</li>
+                                    <li>Educational certificates and mark sheets</li>
+                                    <li>Character certificate from educational institution</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        {/* Benefits Section */}
+                        <div id="benefits" className="info-section">
+                            <h2 className="info-title">
+                                <span className="material-icons">card_giftcard</span>
+                                Financial Benefits & Support
+                            </h2>
+                            <div className="benefits-grid">
+                                <div className="benefit-card">
+                                    <div className="benefit-amount">₹5,000</div>
+                                    <div className="benefit-description">Monthly stipend paid directly to your bank account by 7th of each month during the 12-month internship period</div>
+                                </div>
+                                <div className="benefit-card">
+                                    <div className="benefit-amount">₹6,000</div>
+                                    <div className="benefit-description">One-time grant upon successful completion of the internship program and final evaluation</div>
+                                </div>
+                                <div className="benefit-card">
+                                    <div className="benefit-amount">Free Training</div>
+                                    <div className="benefit-description">Access to skill development courses, workshops, and certification programs worth thousands of rupees</div>
+                                </div>
+                                <div className="benefit-card">
+                                    <div className="benefit-amount">Career Support</div>
+                                    <div className="benefit-description">Job placement assistance, resume building, interview preparation, and networking opportunities</div>
+                                </div>
+                            </div>
+                            <div className="info-content">
+                                <h3>Additional Benefits</h3>
+                                <ul>
+                                    <li>Health insurance coverage during internship period</li>
+                                    <li>Travel allowance for outstation assignments</li>
+                                    <li>Access to government facilities and libraries</li>
+                                    <li>Mentorship from senior professionals</li>
+                                    <li>Certificate of completion from Government of India</li>
+                                    <li>Priority consideration for permanent positions</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        {/* Application Form Section */}
+                        <div id="apply" className="form-section">
+                            <h2 className="form-title">
+                                <span className="material-icons">person_search</span>
+                                Find Your Perfect Internship
+                            </h2>
+                            
+                            <form onSubmit={handleSubmit}>
+                                <div className="form-grid">
+                                    {/* Education */}
+                                    <div className="input-group">
+                                        <label className="input-label">
+                                            <span className="material-icons">school</span>
+                                            Education Level
+                                        </label>
+                                        <select 
+                                            className="select-field"
+                                            value={formData.education}
+                                            onChange={(e) => handleInputChange('education', e.target.value)}
+                                            required
+                                        >
+                                            <option value="">Select your education level</option>
+                                            <option value="high-school">High School (12th)</option>
+                                            <option value="diploma">Diploma</option>
+                                            <option value="undergraduate">Undergraduate</option>
+                                            <option value="postgraduate">Postgraduate</option>
+                                        </select>
+                                    </div>
+
+                                    {/* Sector Interest */}
+                                    <div className="input-group">
+                                        <label className="input-label">
+                                            <span className="material-icons">business</span>
+                                            Preferred Sector
+                                        </label>
+                                        <select 
+                                            className="select-field"
+                                            value={formData.sector}
+                                            onChange={(e) => handleInputChange('sector', e.target.value)}
+                                            required
+                                        >
+                                            <option value="">Select preferred sector</option>
+                                            {sectorOptions.map(sector => (
+                                                <option key={sector} value={sector}>{sector}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {/* Location */}
+                                    <div className="input-group">
+                                        <label className="input-label">
+                                            <span className="material-icons">location_on</span>
+                                            Location Preference
+                                        </label>
+                                        <select 
+                                            className="select-field"
+                                            value={formData.location}
+                                            onChange={(e) => handleInputChange('location', e.target.value)}
+                                            required
+                                        >
+                                            <option value="">Select preferred location</option>
+                                            {locationOptions.map(location => (
+                                                <option key={location} value={location}>{location}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {/* Skills Section */}
+                                <div className="input-group">
+                                    <label className="input-label">
+                                        <span className="material-icons">psychology</span>
+                                        Skills & Interests (Select multiple)
+                                    </label>
+                                    <div className="skills-container">
+                                        {skillOptions.map(skill => (
+                                            <div
+                                                key={skill}
+                                                className={`skill-chip ${formData.skills.includes(skill) ? 'selected' : ''}`}
+                                                onClick={() => toggleSkill(skill)}
+                                            >
+                                                {skill}
+                                                {formData.skills.includes(skill) && (
+                                                    <span className="material-icons" style={{fontSize: '16px'}}>check</span>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <button 
+                                    type="submit" 
+                                    className="submit-btn"
+                                    disabled={loading}
+                                >
+                                    {loading ? (
+                                        <>
+                                            <div className="spinner"></div>
+                                            Finding Recommendations...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span className="material-icons">search</span>
+                                            Find My Perfect Internship
+                                        </>
+                                    )}
+                                </button>
+                            </form>
+                        </div>
+
+                        {/* Dashboard Section */}
+                        <div id="dashboard" className="info-section">
+                            <h2 className="info-title">
+                                <span className="material-icons">dashboard</span>
+                                Application Dashboard (Demo)
+                            </h2>
+                            <div className="dashboard-grid">
+                                <div className="dashboard-card">
+                                    <h4>Application Status</h4>
+                                    <span className="status-badge status-pending">Under Review</span>
+                                    <p style={{marginTop: '12px', fontSize: '0.9rem', color: '#666'}}>
+                                        Your application is being reviewed by our team. You will receive an update within 5-7 business days.
+                                    </p>
+                                </div>
+                                
+                                <div className="dashboard-card">
+                                    <h4>Document Upload</h4>
+                                    <div className="progress-bar">
+                                        <div className="progress-fill" style={{width: '75%'}}></div>
+                                    </div>
+                                    <p style={{fontSize: '0.9rem', color: '#666'}}>
+                                        3 of 4 documents uploaded. Missing: Character Certificate
+                                    </p>
+                                </div>
+                                
+                                <div className="dashboard-card">
+                                    <h4>Interview Schedule</h4>
+                                    <span className="status-badge status-approved">Scheduled</span>
+                                    <p style={{marginTop: '12px', fontSize: '0.9rem', color: '#666'}}>
+                                        Virtual interview on March 15, 2024 at 2:00 PM. Check your email for meeting link.
+                                    </p>
+                                </div>
+                                
+                                <div className="dashboard-card">
+                                    <h4>Program Completion</h4>
+                                    <div className="progress-bar">
+                                        <div className="progress-fill" style={{width: '0%'}}></div>
+                                    </div>
+                                    <p style={{fontSize: '0.9rem', color: '#666'}}>
+                                        Internship will begin after successful interview and document verification.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Recommendations Section */}
+                        {showRecommendations && (
+                            <div className="recommendations-section">
+                                <h2 className="recommendations-title">
+                                    <span className="material-icons">star</span>
+                                    Recommended Internships for You
+                                </h2>
+                                
+                                <div className="recommendations-grid">
+                                    {allRecommendations.slice(0, displayedRecommendations).map(internship => (
+                                        <div key={internship.id} className="recommendation-card">
+                                            <div className="card-header">
+                                                <div>
+                                                    <h3 className="card-title">{internship.title}</h3>
+                                                    <div className="card-location">
+                                                        <span className="material-icons">location_on</span>
+                                                        {internship.location}
+                                                    </div>
+                                                </div>
+                                                <div className="card-sector">{internship.sector}</div>
+                                            </div>
+                                            
+                                            <p className="card-description">{internship.description}</p>
+                                            
+                                            <button 
+                                                className="apply-btn"
+                                                onClick={() => handleApply(internship.id)}
+                                            >
+                                                <span className="material-icons">send</span>
+                                                Apply Now
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                                
+                                {displayedRecommendations < allRecommendations.length && (
+                                    <button className="load-more-btn" onClick={loadMoreRecommendations}>
+                                        <span className="material-icons">expand_more</span>
+                                        Load More Internships ({allRecommendations.length - displayedRecommendations} remaining)
+                                    </button>
+                                )}
+                            </div>
+                        )}
+
+                        {/* FAQ Section */}
+                        <div id="faq" className="info-section">
+                            <h2 className="info-title">
+                                <span className="material-icons">help</span>
+                                Frequently Asked Questions
+                            </h2>
+                            <div>
+                                {[
+                                    {
+                                        question: "What documents are required for application?",
+                                        answer: "You need Aadhaar card, educational certificates, bank account details, and a recent photograph. All documents should be in PDF format and clearly legible."
+                                    },
+                                    {
+                                        question: "How is the monthly stipend disbursed?",
+                                        answer: "The ₹5,000 monthly stipend is directly transferred to your bank account by the 7th of each month during your internship period. Ensure your bank details are correct during registration."
+                                    },
+                                    {
+                                        question: "Can I apply for multiple internship positions?",
+                                        answer: "Yes, you can apply for up to 3 different positions, but you can only accept one internship offer at a time. Choose positions that align with your career goals."
+                                    },
+                                    {
+                                        question: "What happens after completing the internship?",
+                                        answer: "You receive a completion certificate, the one-time grant of ₹6,000, and may be offered permanent employment by the host company. Many interns receive job offers."
+                                    },
+                                    {
+                                        question: "Is there any bond or service commitment?",
+                                        answer: "No, there is no service bond. However, you are expected to complete the full 12-month internship period. Early termination may affect future applications."
+                                    }
+                                ].map((faq, index) => (
+                                    <div key={index} className="faq-item">
+                                        <div className="faq-question" onClick={() => toggleFAQ(index)}>
+                                            <span>{faq.question}</span>
+                                            <span className={`material-icons faq-icon ${openFAQ === index ? 'rotated' : ''}`}>
+                                                expand_more
+                                            </span>
+                                        </div>
+                                        <div className={`faq-answer ${openFAQ === index ? 'open' : ''}`}>
+                                            <p>{faq.answer}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Scroll to Top Button */}
+                    <button 
+                        className={`scroll-to-top ${showScrollTop ? 'visible' : ''}`}
+                        onClick={scrollToTop}
+                        aria-label="Scroll to top"
+                    >
+                        <span className="material-icons">keyboard_arrow_up</span>
+                    </button>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<PMInternshipApp />, document.getElementById('root'));
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97f99efe433ee89d',t:'MTc1Nzk1NTAwNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
